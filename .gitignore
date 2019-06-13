@@ -1,0 +1,11 @@
+# .gitignore
+__pycache__
+.idea
+*.pyc
+chembl_datasets
+pcba_dataset
+tox21_dataset
+custom_classifier_chain.py
+cotraining.py
+custom_multioutput_old_method.py
+test.py

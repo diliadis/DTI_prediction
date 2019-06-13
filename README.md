@@ -63,28 +63,37 @@ The result of all this pre-processing was the production of mainly four files, w
 * SampleIdTable.txt: This file contains 1,318,187 records. 
 Each line contains only the id of a chemical compound which is in the same format with the id in the chembl.fpf file.
 
-![alt text](https://github.com/diliadis/DTI_prediction/blob/master/images/SampeldTableScreenshot2.png)
+<p align="center">
+  <img src="https://github.com/diliadis/DTI_prediction/blob/master/images/SampeldTableScreenshot2.png">
+</p>
 
 * cluster.info: this file contains 1,318,187 records. Each line has two columns. 
 The first column has the id of the assigned cluster and the second column has the id of the chemical compound (there are three folds-ids and the possible values are 0,1,2). 
 In this file the id of the chemical compound does not have the same formatting as the corresponding ids in the chembl.fpf and SampleIdTable.txt files. 
 On this file, the value of the new id corresponds to the location of the old id in the file SampleIdTable.txt.
 
-![alt text](https://github.com/diliadis/DTI_prediction/blob/master/images/cluster1Screenshot2.png)
+<p align="center">
+  <img src="https://github.com/diliadis/DTI_prediction/blob/master/images/cluster1Screenshot2.png">
+</p>
+
 
 * targetActivities.txt: This file contains 3.172.523 records and each line has three columns. 
 The first column contains the id of the type of activity that is observed for a compound-target pair. 
 The possible values, as well as their meaning, are the following:
 
-⋅⋅* 1: inactive
-⋅⋅* 11: weak inactive
-⋅⋅* 3: active
-⋅⋅* 13: weak active
-⋅⋅* 2: unknown
-⋅⋅* 0: contradicting
-⋅⋅* 1: 10: weakly contradicting
+    * 1: inactive
+    * 11: weak inactive
+    * 3: active
+    * 13: weak active
+    * 2: unknown
+    * 0: contradicting
+    * 1: 10: weakly contradicting
 
-![alt text](https://github.com/diliadis/DTI_prediction/blob/master/images/targetActivitiesScreenshot2.png)
+
+<p align="center">
+  <img src="https://github.com/diliadis/DTI_prediction/blob/master/images/targetActivitiesScreenshot2.png">
+</p>
+
 
 
 We also had to implement additional preprocessing steps to be able to use the interaction information in the above files.

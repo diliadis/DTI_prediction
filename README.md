@@ -56,7 +56,9 @@ The result of all this pre-processing was the production of mainly four files, w
 * chembl.fpf: this file contains 1,318,187 records. Each line begins with the id of a chemical compound (e.g., CHEMBL153534) and continues with the features. Each feature consists of the
    id, the character ':' and the value 1. The features are represented as ECFP12 fingerprints. This is in essence a sparse representation where the ones represent substructures that the compound has.
 
-![alt text](https://github.com/diliadis/DTI_prediction/blob/master/images/chemblScreenshot2.png)
+<p align="center">
+  <img src="https://github.com/diliadis/DTI_prediction/blob/master/images/chemblScreenshot2.png">
+</p>
 
 * SampleIdTable.txt: This file contains 1,318,187 records. 
 Each line contains only the id of a chemical compound which is in the same format with the id in the chembl.fpf file.
@@ -128,4 +130,3 @@ This representation is then given to the [RDKit library](https://www.rdkit.org/)
 
 
 
-![alt text](https://github.com/diliadis/flight_radar/blob/master/images/15_5_2018_node_size_in_degree_node_color_in_degree.png)

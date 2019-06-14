@@ -155,8 +155,80 @@ This characteristic makes the datasets ignore many important aspects of the drug
 Additionally, the majority of the methods developed in the area use prediction formulations that are based on the 
 practically unrealistic assumption that during the construction of the models and the evaluation of their predictive accuracy, we have the full information about the drug and target space.
 
-In particular, the typical evaluation method assumes that the drug-target pairs to be predicted in the validation set are randomly distributed in the known drug-target interaction matrix
+In particular, the typical evaluation method assumes that the drug-target pairs to be predicted in the validation set are randomly distributed in the known drug-target interaction matrix:
 
 <p align="center">
-  <img src="https://github.com/diliadis/DTI_prediction/blob/master/images/unrealistic2.png">
+  <img width="75%" height="75%" src="https://github.com/diliadis/DTI_prediction/blob/master/images/unrealistic2.png">
 </p>
+
+The matrix contains active and inactive drug-target interaction pairs (entries colored blue and light blue respectively). 
+The matrix entries are usually randomly partitioned into five parts,each of which is removed in turn from the training set (entries colored grey) and used as a test data.
+
+
+To be able to have comparable results with the state-of-the-art methods shown in following table we had to change the typical training and testing process we typically use in our multi-label implementations. 
+Instead of splitting the dataset based on the compounds and therefore falling into the realistic setting, we randomly hide drug-target pairs from the train set. 
+In our implementations, the ECCRU variants just ignore these drug-target pairs during the training phase. 
+During testing, the algorithm makes a prediction for every instance and every label in the train set and the accuracy metric e.g. auRoc is computed only based on the hidden values. 
+With this approach the algorithm sees every compound and target during training with the exclusion of some drug-target pairs that are kept for testing.
+
+
+| Dataset | DBSI | KBMF2K | NetCBP | Yamanishi | Yamanishi | Wang | Mousavian | iDTI-ESBoost | Pahikkala | Our approach |
+| --- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| `Enzymes` | 0.8075 | 0.8320 | 0.8251 | 0.904 | 0.8920 | 0.8860 | 0.9480 | 0.9689 | 0.9600 | **0.8627** |
+| `Ion Channels` | 0.8029 | 0.7990 | 0.8034 | 0.8510 | 0.8120 | 0.8930 | 0.8890 | 0.9369 | 0.9640 | **0.8046** |
+| `GPCRs` | 0.8022 | 0.8570 | 0.8235 | 0.8990 | 0.8270 | 0.8730 | 0.8720 | 0.9322 | 0.9270 | **0.8672** |
+| `Nuclear Receptors` | 0.7578 | 0.8240 | 0.8394 | 0.8430 | 0.8350 | 0.8240 | 0.8690 | 0.9285 | 0.8610 | **0.9257** |
+
+
+Our standard multi-label implementation is based on the problem setting shown below which is far more realistic and similar to what a typical pharmaceutical company may encounter, where only part of the drug or target information is available during the model training phase. 
+For example, a molecular chemistry team could synthesize a new chemical compound that needs to be screened with all the available protein targets.
+
+<p align="center">
+  <img width="75%" height="75%" src="https://github.com/diliadis/DTI_prediction/blob/master/images/realistic.png">
+</p>
+
+The problem with the unrealistic setting is that its drug-target interaction prediction model is trained on a specific training set (a set comprised of compounds and protein targets that were available to the company at a specific point in time).
+So, it is easy to see that the newly synthesized chemical compounds will not be able to be evaluated by a model based in this problem setting. 
+I contrast, it is obvious that our model was developed with the more  setting in mind and therefore is more suitable for use.
+
+We implemented two different versions for the two different problem settings. 
+The implementation of the unrealistic setting gave us the ability to compare our methods with the state-of-the-art approaches in the area. 
+In our experiments we tried many different combinations with the following parameters:
+
+* number of CCs: we tested ensembles with 10, 50 and 100 classifier chains. We also experemented with bigger ensembles but the results did not show improvements.
+* base classifier and kernel/solver: we tested implementations of SVM, Logistic Regression and Multinomial Naive Bayes provided by the sklearn library. The SVM was tested with the linear and RBF kernels,  while Logistic Regression was tested with the lbfgs and liblinear solvers.
+* classifiers: we tested the standard ensemble of classifier chains algorithm as well as all the variants of the ECCRU algorithm.
+
+The best performing combinations out of the 60 we tested for every gold standard benchmark dataset in terms of the area under the reciever characteristic curve and the area under the precision recall curve are shown in the following table:
+
+| Dataset | Number of CCs | Base Classifier | kernel/solver | method | auPR | auROC |
+| --- | :---: | :---: | :---: | :---: | :---: | :---: |
+| `Enzymes` | 100 | SVC | linear | ECCRU | 0.4662 |  |
+|           |     | Logistic Regression | liblinear |  |  | 0.8460 |
+| `Ion Channels` | 100 | Logistic Regression | lbfgs | ECCRU | 0.3302 | 0.7530 |
+| `GPCRs`        | 50  | Logistic Regression | lbfgs | ECCRU | 0.4802 | 0.8305 | 
+| `Nuclear Receptors` | 100 | Multinomial NB |  | ECCRU | 0.8061 | 0.9045 |
+
+When we compare our results with the state-of-the-art methods on the four gold standard datasets, we see that we rank in the last places in terms of the area under.
+In the enzymes, ion channels datasets we are ranked 7th out of the 10 classifiers, in the GPCRs we are ranked 6th and in the nuclear receptors dataset we are ranked 2nd.  
+
+
+When we compare the performance of our implementations in the two problem settings  we can see that the performance in the more realistic setting is worse.
+
+| auROC | Enzymes | Ion Channels | GPCRs | Nuclear Receptors |
+| --- | :---: | :---: | :---: | :---: |
+| Pahikkala | 0.8320 | 0.8020 | 0.8520 | 0.8460 |
+| **Our approach** | **0.8460** | **0.7530** | **0.8305** | **0.9045** |
+
+
+| auPR | Enzymes | Ion Channels | GPCRs | Nuclear Receptors |
+| --- | :---: | :---: | :---: | :---: |
+| Pahikkala | 0.3950 | 0.3650 | 0.4020 | 0.5180 |
+| **Our approach** | **0.4660** | **0.3300** | **0.4800** | **0.8061** |
+
+[Pahikkala et al.](https://www.ncbi.nlm.nih.gov/pubmed/24723570) detailed this exact problem, proposed some improved validation methods and shared prediction accuracies in the form of auROC and auPR values for the two settings that we have discussed above.
+These prediction results were provided for two learning models, the KronRLS and Random Forest methods. 
+From the comparison, we can see that our approach is competitive. In terms of the auRoc score, we have better performance on the Enzymes and nuclear receptors datasets while in terms of the auPR score we achieve better results on the enzymes, GPCRs, and nuclear receptors datasets. 
+
+
+### 2) ChEMBL dataset

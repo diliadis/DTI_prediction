@@ -138,4 +138,25 @@ This representation is then given to the [RDKit library](https://www.rdkit.org/)
 
 
 
+## Results
 
+The datasets that are used in the literature of drug-target interaction prediction are usually highly imbalanced.
+The number of inactive pairs (negative samples) significantly exceeds that of the active pairs (positive samples).
+In this type of datasets traditional metrics like accuracy convey a false picture of performance.
+Two measures that are far more suitable for imbalanced datasets are the area under the Receiver Operating Characteristic (ROC) curve, auROC, and the area under the precision-recall (PR) curve, auPR.
+These two measures have become standard metrics for comparison in the area of drug-target interaction prediction.
+
+
+### 1) Gold standard dataset
+
+The gold standard datasets, although convenient for comparison between different methods in this area, they present serious limitations like the fact that they contain only true positive interactions.
+This characteristic makes the datasets ignore many important aspects of the drug-target interactions like its quantitative affinity.
+
+Additionally, the majority of the methods developed in the area use prediction formulations that are based on the 
+practically unrealistic assumption that during the construction of the models and the evaluation of their predictive accuracy, we have the full information about the drug and target space.
+
+In particular, the typical evaluation method assumes that the drug-target pairs to be predicted in the validation set are randomly distributed in the known drug-target interaction matrix
+
+<p align="center">
+  <img src="https://github.com/diliadis/DTI_prediction/blob/master/images/unrealistic.pdf">
+</p>

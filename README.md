@@ -24,6 +24,8 @@ This dataset was compiled as a target prediction benchmark dataset out of the Ch
 The whole dataset as well as detailed notes on preprocessing are freely available at [this](http://www.bioinf.jku.at/research/VirtScreen/) page.
 This dataset contains more than 1,200 targets, 1.3 million compounds and 13 million ECFP12 features.
 
+The ChEMBL dataset is too big to upload on github. A link will be available in the near future.
+
 ### 2) Gold standard dataset
 
 The is considered as the gold standard in the area of drug-target interaction prediction. 
@@ -35,6 +37,8 @@ All this drug target interaction information was extracted from the following da
 * [KEGG BRITE](https://www.genome.jp/kegg/brite.html)
 * [BRENDA](https://www.brenda-enzymes.org/) 
 * [SuperTarget](http://insilico.charite.de/supertarget/index.php). 
+
+The gold standard datasets are relatively small in size, so they are located in the [gold_standard_datasets](https://github.com/diliadis/DTI_prediction/tree/master/gold_standard_datasets) folder of this project.
 
 
 ## Preprocessing
@@ -266,9 +270,10 @@ The results are presented below:
 
 
 From the two tables above we see that our methods are inferior in term of the auRoc score. This result can be attributed to the severe sampling we performed to be able to have reasonable runtimes.
-The 8 methods in table above are trained on the full dataset while we downsample to 100,000 instances. Our inferior performance can be also associated with the ratio between the number of different chain sequences and the total number of labels. 
+The 8 methods in table above are trained on the full dataset while we downsample to 100,000 instances. The inferior performance can be also associated with the ratio between the number of different chain sequences and the total number of labels. 
 A dataset with close to 1000 labels can produce an impractical number of different possible chain sequences. 
-Our available computational power limited us to around 50 different chain sequences in every experiment. 
+The available computational power limited us to around 50 different chain sequences in every experiment. 
+
 These two factors could significantly increase the chance of a poor chain-ordering or error propagation negatively affecting the overall predictive performance. 
 Aditionally, the highly imbalanced nature of the dataset could also be a factor that negatively affected the performance. During the undersampling of the ECCRU variants we observed that the number of instances that each label was trained varied from 30 to tens of thousands.
 

@@ -278,6 +278,7 @@ However, the reality is that many unknown drug-target pairs could actually be ac
 The ChemBL dataset provides explicit inactive drug-target pairs, something that we used in our implementations and experiments. 
 The results are presented in the table below:
 
+<p align="center">
 | Base Classifier | method | auROC |
 | --- | :---: | :---: | 
 | ECCRU | MultinomialNB | 0.5243 |
@@ -286,6 +287,7 @@ The results are presented in the table below:
 |  | Logistic Regression |  0.5202 |
 | ECCRU3 | MultinomialNB | 0.5215 |
 |  | Logistic Regression |  0.5298 |
+<p>
 
 The results presented in table above show that the use of explicit information of inactivity leads to a much harder problem to solve. 
 The predictive performance in terms of the auROC score is inferior for all the variants of the ECCRU algorithm by about 10\%. 

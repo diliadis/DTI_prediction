@@ -158,5 +158,5 @@ practically unrealistic assumption that during the construction of the models an
 In particular, the typical evaluation method assumes that the drug-target pairs to be predicted in the validation set are randomly distributed in the known drug-target interaction matrix
 
 <p align="center">
-  <img src="https://github.com/diliadis/DTI_prediction/blob/master/images/unrealistic.pdf">
+  <img src="https://github.com/diliadis/DTI_prediction/blob/master/images/unrealistic2.png">
 </p>

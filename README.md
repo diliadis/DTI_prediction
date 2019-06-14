@@ -128,7 +128,7 @@ The result of these two steps is that we have the SMILES representation of every
 This representation is then given to the [RDKit library](https://www.rdkit.org/) so that we can obtain the extended connectivity fingerprints or ECFPs that will be used as features in the experiments. 
 
 
-| Dataset | Compounds | Proteins | Interactions | Mean(ImR) | min(ImR) | max(ImR) |
+| Dataset | Compounds | Proteins | Interactions | Mean(**Im**balance**R**atio) | min(ImR) | max(ImR) |
 | --- | :---: | :---: | :---: | :---: | :---: | :---: |
 | `Enzyme` | 418 | 664 | 2926 | 251.67 | 417 | 6.08 |
 | `Ion Channel` | 191 | 204 | 1476 | 63.08 | 190 | 4.61 |
@@ -232,3 +232,63 @@ From the comparison, we can see that our approach is competitive. In terms of th
 
 
 ### 2) ChEMBL dataset
+
+In our implementation, we had to randomly sample 100000 instances from the original dataset in order to have more manageable runtimes. 
+We also kept the 15 active instances per label low threshold that [Unterthiner et al.](http://www.bioinf.jku.at/publications/2014/NIPS2014a.pdf) proposed in their implementation.
+We then added a similar threshold for the features (100 instances per feature) in an attempt to reduce the dimensionality and general runtime of the tests.  
+The performance tests of the three ECCRU variants were implemented using a three fold validation that ensured that every chemical compound was only present in one of the folds. 
+The results are presented below:
+
+
+| Base Classifier | method | auROC |
+| --- | :---: | :---: | 
+| ECCRU | MultinomialNB | 0.6643 |
+|  | SVM | 0.6714 |
+|  | Logistic Regression | 0.6633 |
+| ECCRU2 | MultinomialNB | 0.6488 |
+|  | SVM | 0.6492 |
+|  | Logistic Regression |  0.6380 |
+| ECCRU3 | MultinomialNB | 0.6531 |
+|  | SVM | 0.6601 |
+|  | Logistic Regression |  0.6531 |
+
+
+| method | auROC |
+| --- | :---: |
+| Deep network | 0.830 |
+| SVM | 0.816 |
+| BKD | 0.803 |
+| Logistic Regression | 0.796 |
+| k-NN | 0.775 |
+| Pipeline Pilot Bayesian Classifier | 0.755 |
+| Parzen-Rosenblatt | 0.730 |
+| SEA | 0.699 |
+
+
+From the two tables above we see that our methods are inferior in term of the auRoc score. This result can be attributed to the severe sampling we performed to be able to have reasonable runtimes.
+The 8 methods in table above are trained on the full dataset while we downsample to 100,000 instances. Our inferior performance can be also associated with the ratio between the number of different chain sequences and the total number of labels. 
+A dataset with close to 1000 labels can produce an impractical number of different possible chain sequences. 
+Our available computational power limited us to around 50 different chain sequences in every experiment. 
+These two factors could significantly increase the chance of a poor chain-ordering or error propagation negatively affecting the overall predictive performance. 
+Aditionally, the highly imbalanced nature of the dataset could also be a factor that negatively affected the performance. During the undersampling of the ECCRU variants we observed that the number of instances that each label was trained varied from 30 to tens of thousands.
+
+
+The methods mentioned above make the assumption that all the unknown drug-target pairs can be considered inactive. 
+However, the reality is that many unknown drug-target pairs could actually be active. 
+The ChemBL dataset provides explicit inactive drug-target pairs, something that we used in our implementations and experiments. 
+The results are presented in the table below:
+
+| Base Classifier | method | auROC |
+| --- | :---: | :---: | 
+| ECCRU | MultinomialNB | 0.5243 |
+|  | Logistic Regression | 0.5391 |
+| ECCRU2 | MultinomialNB | 0.5184 |
+|  | Logistic Regression |  0.5202 |
+| ECCRU3 | MultinomialNB | 0.5215 |
+|  | Logistic Regression |  0.5298 |
+
+The results presented in table above show that the use of explicit information of inactivity leads to a much harder problem to solve. 
+The predictive performance in terms of the auROC score is inferior for all the variants of the ECCRU algorithm by about 10\%. 
+This significant decrease in performance can be attributed to the problem setting itself. 
+The problem setting where all the unknown drug-target interactions are considered inactive gives every classifier the ability to raise its performance artificially. 
+This happens when a model falsely predicts potentially active pairs as inactive and the performance metric i.e. the auRoc score falsely accepts it as correct.

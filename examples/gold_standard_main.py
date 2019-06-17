@@ -47,12 +47,12 @@ def main(args):
                         ensemble_model, indexes_list = ml_methods.parallel_ecc_train(X_train, y_train, num_threads,
                                                                                      num_ccs,
                                                                                      ccru_version, model2)
-                        results[fold_counter] = ml_methods.parallel_ecc_test(ensemble_model, X_test, y_test,
+                        results[fold_counter] = ml_methods.parallel_ecc_predict(ensemble_model, X_test, y_test,
                                                                              num_threads,
                                                                              num_ccs, ccru_version, indexes_list)
                     else:
                         ensemble_model = ml_methods.parallel_ecc_train(X_train, y_train, num_threads, num_ccs, ccru_version)
-                        results[fold_counter] = ml_methods.parallel_ecc_test(ensemble_model, X_test, y_test,
+                        results[fold_counter] = ml_methods.parallel_ecc_predict(ensemble_model, X_test, y_test,
                                                                              num_threads,
                                                                              num_ccs, ccru_version, model2)
 

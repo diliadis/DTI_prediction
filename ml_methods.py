@@ -214,7 +214,7 @@ def parallel_ecc_train(X_train, y_train, num_threads, num_ccs, ccru_version, bas
         return model
 
 
-def parallel_ecc_test(model, X_test, y_test, num_threads, num_ccs, ccru_version, indexes_list=[]):
+def parallel_ecc_predict(model, X_test, y_test, num_threads, num_ccs, ccru_version, indexes_list=[]):
     ensemble_votes = np.zeros((y_test.shape[0], y_test.shape[1]))
     if ccru_version == 'eccru2' or ccru_version == 'eccru3':
         # q-dimensional counter
@@ -268,7 +268,7 @@ def predict_on_large_dataset(ensemble_model, X_test, y_test, ccru_version, num_t
     while finish < y_test.shape[0]:
         print('------------------------------------------Step: ' + str(step_counter))
         step_counter += 1
-        results = parallel_ecc_test(ensemble_model, X_test[start: finish, :], y_test[start: finish, :], num_threads,
+        results = parallel_ecc_predict(ensemble_model, X_test[start: finish, :], y_test[start: finish, :], num_threads,
                                                num_ccs, ccru_version)
         if start == 0:
             final_result = results.copy()
@@ -276,7 +276,7 @@ def predict_on_large_dataset(ensemble_model, X_test, y_test, ccru_version, num_t
             final_result = np.concatenate((final_result, results), axis=0)
         start = finish
         finish = start + step_size
-    results = parallel_ecc_test(ensemble_model, X_test[start: y_test.shape[0], :],
+    results = parallel_ecc_predict(ensemble_model, X_test[start: y_test.shape[0], :],
                                            y_test[start: y_test.shape[0], :], num_threads, num_ccs, ccru_version)
     final_result = np.concatenate((final_result, results), axis=0)
     return final_result

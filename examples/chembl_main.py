@@ -47,7 +47,7 @@ def main3(args):
             y_train[y_train == -1] = 0
 
             ensemble_model = ml_methods.parallel_ecc_train(X_train, y_train, num_threads, num_ccs, ccru_version, model2)
-            test_results = ml_methods.parallel_ecc_test(ensemble_model, X_test, y_test, num_threads, num_ccs)
+            test_results = ml_methods.parallel_ecc_predict(ensemble_model, X_test, y_test, num_threads, num_ccs)
             auc_result = auc_result + ml_methods.get_mean_auROC(y_test, test_results)
 
     print('mean_auc: ' + str(auc_result / len(folds)))

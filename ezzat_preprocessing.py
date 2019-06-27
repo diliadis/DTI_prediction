@@ -4,7 +4,7 @@ from collections import Counter
 import random
 
 
-def load_data(filepath):
+def load_txt_file(filepath):
     num_rows = sum(1 for line in open(filepath))
     fp = open(filepath)
     line = fp.readline()
@@ -29,7 +29,7 @@ def load_data(filepath):
     return data_matrix
 
 
-def load_datasets():
+def load_dataset():
     os.chdir('../../datasets/ezzat_dataset/')
 
     # load the interaction matrix from the .txt file
@@ -50,6 +50,8 @@ def load_datasets():
     target_feature_vectors = np.load('target_feature_vectors.npy')
     # load the compound feature vector matrix as a numpy array
     drug_feature_vectors = np.load('drug_feature_vectors.npy')
+
+    return interaction_matrix, drug_feature_vectors, target_feature_vectors
 
 
 def check_labels_per_target(interaction_matrix):
@@ -96,8 +98,6 @@ def get_folds(interaction_matrix, drug_feature_vectors, num_folds=5):
     # cause problems during training as well as during validation.
     for l_index in range(num_columns):
         sampled_actives = [index for index, label in enumerate(filtered_interaction_matrix[:, l_index]) if label == 1]
-        if len(sampled_actives) < 5:
-            print(str(l_index) + ') Fuck!!!!!!  :' + str(len(sampled_actives)))
         random.shuffle(sampled_actives)
         fold_index = 0
         active_index = 0

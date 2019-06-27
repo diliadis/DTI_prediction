@@ -125,10 +125,8 @@ class ClassifierChain_with_random_undesampling(ClassifierChain):
             sampled_y = [minority_index] * minority_counter
             #print('m'+str(len(sampled_y))+' '+str(minority_index)+'s')
 
-
             sampled_index.extend(sampled_index)
             sampled_y.extend(sampled_y)
-
 
             # sample the majority samples
             temp_sampled_index = [index for index, label in enumerate(y) if label == majority_index]
@@ -136,7 +134,7 @@ class ClassifierChain_with_random_undesampling(ClassifierChain):
             sampled_index.extend(random.sample(temp_sampled_index, minority_counter))
             sampled_y.extend([majority_index] * minority_counter)
 
-            print(str(self.order_[chain_idx])+') training label:'+str(chain_idx)+' with '+str(len(sampled_y))+' instances ')
+            print(str(chain_idx)+'___'+str(self.order_[chain_idx])+') training label:'+str(chain_idx)+' with '+str(len(sampled_y))+' instances ')
             #print('X_aug[np.array(sampled_index), :(X.shape[1] + chain_idx)]: '+str(X_aug[np.array(sampled_index), :(X.shape[1] + chain_idx)].shape))
             #print('np.array(sampled_y): '+str(np.array(sampled_y).shape))
 
@@ -146,7 +144,6 @@ class ClassifierChain_with_random_undesampling(ClassifierChain):
                 temp_estimator = gs.fit(X_aug[np.array(sampled_index), :(X.shape[1] + chain_idx)], np.array(sampled_y), X_val_aug[:, :(X.shape[1] + chain_idx)], Y_val[:, self.order_[chain_idx]], scoring='roc_auc')
             else:
                 estimator.fit(X_aug[np.array(sampled_index), :(X.shape[1] + chain_idx)], np.array(sampled_y))
-
 
             if chain_idx < len(self.estimators_) - 1:
                 # produce the predictions and add them as features for the next classifier in the chain
@@ -168,7 +165,6 @@ class ClassifierChain_with_random_undesampling(ClassifierChain):
                     X_aug[:, col_idx] = previous_predictions
                     if val_mode:
                         X_val_aug[:, col_idx] = previous_predictions_val
-
 
             # -------------------------------------------------------------------------------------------------------------------------------
             if self.cv is not None and chain_idx < len(self.estimators_) - 1:

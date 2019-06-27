@@ -87,29 +87,36 @@ def predict_results(X_test, y_test, seed, trained_model, ccru_version):
     return y_pred
 
 
-def get_mean_auROC(y_test, prob_result):
-    results_list = []
-    contains_negative = False
-    if y_test.__contains__(-1):
-        contains_negative = True
+def get_mean_auROC(y_test, prob_result, averaging='micro'):
+    final_score = 0
+    if averaging == 'micro':
+        results_list = []
+        contains_negative = False
+        if y_test.__contains__(-1):
+            contains_negative = True
 
-    for i in range(0, prob_result.shape[1]):
-        compute_label = False
-        if contains_negative == False:
-            if np.count_nonzero(y_test[:, i] == 1) !=0:
-                compute_label = True
-        else:
-            if np.count_nonzero(y_test[:, i] == 1) != 0 and np.count_nonzero(y_test[:, i] == -11) != 0:
-                compute_label = True
+        for i in range(0, prob_result.shape[1]):
+            compute_label = False
+            if contains_negative == False:
+                if np.count_nonzero(y_test[:, i] == 1) !=0:
+                    compute_label = True
+            else:
+                if np.count_nonzero(y_test[:, i] == 1) != 0 and np.count_nonzero(y_test[:, i] == -11) != 0:
+                    compute_label = True
 
-        if compute_label:
-            score = roc_auc_score(np.array(y_test[:, i]).flatten(), prob_result[:, i])
-            print(str(i)+'  score: '+str(score))
-            results_list.append(score)
+            if compute_label:
+                score = roc_auc_score(np.array(y_test[:, i]).flatten(), prob_result[:, i])
+                print(str(i)+'  score: '+str(score))
+                results_list.append(score)
 
-    print('mean roc_auc: ' + str(np.mean(results_list)))
-    return np.mean(results_list)
+        print('mean roc_auc: ' + str(np.mean(results_list)))
+        final_score = np.mean(results_list)
+    else:
+        flat_prob_result = prob_result.ravel()
+        flat_y_test = y_test.ravel()
+        final_score = roc_auc_score(np.array(flat_y_test, flat_prob_result)
 
+    return final_score
 
 def get_mean_auc_pr(y_test, prob_result):
     results_list = []

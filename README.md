@@ -1,4 +1,4 @@
-# Flight radar route network visualization
+# Drug-target interaction prediction using imbalance-aware multi-label methods
 
 This is a drug-target interaction prediction (DTI) project written in python. It is based on my [master's thesis](https://drive.google.com/file/d/1ADn2lGBbg35vnDhezeKz62QZV67FF5JP/view?usp=sharing)   
 

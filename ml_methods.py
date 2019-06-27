@@ -111,12 +111,13 @@ def get_mean_auROC(y_test, prob_result, averaging='micro'):
 
         print('mean roc_auc: ' + str(np.mean(results_list)))
         final_score = np.mean(results_list)
-    else:
+    elif averaging == 'macro':
         flat_prob_result = prob_result.ravel()
         flat_y_test = y_test.ravel()
-        final_score = roc_auc_score(np.array(flat_y_test, flat_prob_result)
+        final_score = roc_auc_score(flat_y_test, flat_prob_result)
 
     return final_score
+
 
 def get_mean_auc_pr(y_test, prob_result):
     results_list = []

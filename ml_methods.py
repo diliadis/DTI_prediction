@@ -14,7 +14,7 @@ from hypopt import GridSearch
 from sklearn.utils import resample
 
 
-def train_model(X_train, y_train, seed, ccru_version, base_classifier, X_val, y_val):
+def train_model(X_train, y_train, seed, ccru_version, base_classifier, X_val, y_val, feature_subsets_per_cc = []):
     pid = os.getpid()
     print('The id of '+str(seed)+' is :'+str(pid))
     # print('Train ecc: '+str(seed)+' started')
@@ -59,27 +59,31 @@ def train_model(X_train, y_train, seed, ccru_version, base_classifier, X_val, y_
         print('Train binary_relevance: ' + str(seed) + ' started')
 
         print('training on ' + str(len(sampled_y)))
-
-        trained_model = model.fit(X_train[np.array(sampled_index), :], sampled_y)
+        if len(feature_subsets_per_cc) != 0:
+            trained_model = model.fit(X_train[np.array(sampled_index), feature_subsets_per_cc[seed]], y_train, X_val, y_val)
+        else:
+            trained_model = model.fit(X_train[np.array(sampled_index), :], sampled_y)
     else:
         print('Train ecc: ' + str(seed) + ' started')
-        # print(str(X_train.shape)+'X_train.shape')
-        # print(str(y_train.shape)+'y_train.shape')
-        # resampled_X_train, resampled_y_train = resample(X_train, y_train, replace=True, n_samples=2*X_train.shape[0], random_state=1)
-        trained_model = model.fit(X_train, y_train, X_val, y_val)
+        if len(feature_subsets_per_cc) != 0:
+            trained_model = model.fit(X_train[:, feature_subsets_per_cc[seed]], y_train, X_val, y_val)
+        else:
+            trained_model = model.fit(X_train, y_train, X_val, y_val)
     print('Train model: ' + str(seed) + ' ended')
     return trained_model
 
 
-def predict_results(X_test, y_test, seed, trained_model, ccru_version):
+def predict_results(X_test, seed, trained_model, ccru_version, feature_subsets_per_cc=[]):
     if ccru_version == 'binary_relevance':
         print('Predict for label: '+str(seed)+' started')
         y_pred = trained_model.predict_proba(X_test)
         y_pred = y_pred[:, 1]
         print('predict_'+str(seed)+'_done')
-    elif ccru_version == 'eccru2' or ccru_version == 'eccru3' or ccru_version == 'eccru' or ccru_version == 'standard':
-        print('Predict for model: '+str(seed)+' started')
-        y_pred = trained_model.predict(X_test)
+    elif ccru_version == 'eccru' or ccru_version == 'eccru2' or ccru_version == 'eccru3' or ccru_version == 'standard':
+        if len(feature_subsets_per_cc) == 0:
+            y_pred = trained_model.predict(X_test)
+        else:
+            y_pred = trained_model.predict(X_test[:, feature_subsets_per_cc[seed]])
         print('predict_'+str(seed)+'_done')
     else:
         y_pred = None
@@ -143,9 +147,19 @@ def get_mean_auc_pr(y_test, prob_result):
     return np.mean(results_list)
 
 
-def parallel_ecc_train(X_train, y_train, num_threads, num_ccs, ccru_version, base_classifier, X_val=None, y_val=None):
-    # calculate number of minority examples per label
+# create a random subsampled feature set for every member of the ensemble
+def get_random_feature_subsamples(num_ccs, num_features, feature_subsampling_ratio):
+    feature_subsets_per_cc = []
+    for cc in range(num_ccs):
+        temp_subset = np.random.choice(num_features, int(feature_subsampling_ratio * num_features),
+                                       replace=False)
+        temp_subset.sort()
+        feature_subsets_per_cc.append(temp_subset)
+    return feature_subsets_per_cc
 
+
+def parallel_ecc_train(X_train, y_train, num_threads, num_ccs, ccru_version, base_classifier, X_val=None, y_val=None, feature_subsampling_ratio=None):
+    feature_subsets_per_cc = []
     if ccru_version == 'eccru2' or ccru_version == 'eccru3':
         c_value = num_ccs
         theta_max = 10
@@ -206,23 +220,35 @@ def parallel_ecc_train(X_train, y_train, num_threads, num_ccs, ccru_version, bas
 
         print('Going to train '+str(len(indexes_list))+' CCs')
         print('----'+ccru_version+'-----TRAIN-WITH-PROCESSES----------')
-        model = Parallel(n_jobs=num_threads, verbose=10)(delayed(train_model)(X_train, y_train[:, indexes_list[seed]], seed, ccru_version, base_classifier, X_val, y_val) for seed in range(len(indexes_list)))
+        if feature_subsampling_ratio is not None:
+            feature_subsets_per_cc = get_random_feature_subsamples(len(indexes_list), X_train.shape[1], feature_subsampling_ratio)
+        model = Parallel(n_jobs=num_threads, verbose=10)(delayed(train_model)(X_train, y_train[:, indexes_list[seed]], seed, ccru_version, base_classifier, X_val, y_val, feature_subsets_per_cc) for seed in range(len(indexes_list)))
 
     elif ccru_version == 'standard' or ccru_version == 'eccru':
         print('----'+ccru_version+'-----TRAIN-WITH-PROCESSES----------')
-        model = Parallel(n_jobs=num_threads, verbose=10)(delayed(train_model)(X_train, y_train, seed, ccru_version, base_classifier, X_val, y_val) for seed in range(num_ccs))
+        if feature_subsampling_ratio is not None:
+            feature_subsets_per_cc = get_random_feature_subsamples(num_ccs, X_train.shape[1], feature_subsampling_ratio)
+        model = Parallel(n_jobs=num_threads, verbose=10)(delayed(train_model)(X_train, y_train, seed, ccru_version, base_classifier, X_val, y_val, feature_subsets_per_cc) for seed in range(num_ccs))
 
     elif ccru_version == 'binary_relevance':
         print('----'+ccru_version+'-----TRAIN-WITH-PROCESSES----------')
-        model = Parallel(n_jobs=num_threads)(delayed(train_model)(X_train, y_train[:, seed], seed, ccru_version, base_classifier, X_val, y_val) for seed in range(y_train.shape[1]))
+        if feature_subsampling_ratio is not None:
+            feature_subsets_per_cc = get_random_feature_subsamples(y_train.shape[1], X_train.shape[1], feature_subsampling_ratio)
+        model = Parallel(n_jobs=num_threads)(delayed(train_model)(X_train, y_train[:, seed], seed, ccru_version, base_classifier, X_val, y_val, feature_subsets_per_cc) for seed in range(y_train.shape[1]))
 
-    if ccru_version == 'eccru2' or ccru_version == 'eccru3':
-        return model, indexes_list
+    if len(feature_subsets_per_cc) != 0:
+        if ccru_version == 'eccru2' or ccru_version == 'eccru3':
+            return model, indexes_list, feature_subsets_per_cc
+        else:
+            return model, feature_subsets_per_cc
     else:
-        return model
+        if ccru_version == 'eccru2' or ccru_version == 'eccru3':
+            return model, indexes_list,
+        else:
+            return model
 
 
-def parallel_ecc_predict(model, X_test, y_test, num_threads, num_ccs, ccru_version, indexes_list=[]):
+def parallel_ecc_predict(model, X_test, y_test, num_threads, num_ccs, ccru_version, indexes_list=[], feature_subsets_per_cc = []):
     ensemble_votes = np.zeros((y_test.shape[0], y_test.shape[1]))
     if ccru_version == 'eccru2' or ccru_version == 'eccru3':
         # q-dimensional counter
@@ -234,7 +260,7 @@ def parallel_ecc_predict(model, X_test, y_test, num_threads, num_ccs, ccru_versi
             for index in indexes:
                 cc[index] += 1
 
-        Y_pred_chains = Parallel(n_jobs=num_threads, verbose=10)(delayed(predict_results)(X_test, y_test[:, indexes_list[seed]], seed, model[seed], ccru_version) for seed in range(len(indexes_list)))
+        Y_pred_chains = Parallel(n_jobs=num_threads, verbose=10)(delayed(predict_results)(X_test, seed, model[seed], ccru_version, feature_subsets_per_cc) for seed in range(len(indexes_list)))
 
         for cc_index in range(0, len(indexes_list)):  # for every CCRU
             instances_indexes_list, labels_indexes_list = np.nonzero(
@@ -252,7 +278,7 @@ def parallel_ecc_predict(model, X_test, y_test, num_threads, num_ccs, ccru_versi
 
     elif ccru_version == 'standard' or ccru_version == 'eccru':
         print('----'+ccru_version+'-----PREDICT-WITH-PROCESSES----------')
-        Y_pred_chains = Parallel(n_jobs=num_threads, verbose=10)(delayed(predict_results)(X_test, y_test, seed, model[seed], ccru_version) for seed in range(num_ccs))
+        Y_pred_chains = Parallel(n_jobs=num_threads, verbose=10)(delayed(predict_results)(X_test, seed, model[seed], ccru_version, feature_subsets_per_cc) for seed in range(num_ccs))
         for result in Y_pred_chains:
             ensemble_votes = np.add(result, ensemble_votes)
         ensemble_votes = ensemble_votes/num_ccs # returns the average confidence of the ensemble on each label of each test instance
@@ -260,7 +286,7 @@ def parallel_ecc_predict(model, X_test, y_test, num_threads, num_ccs, ccru_versi
     elif ccru_version == 'binary_relevance':
         print('----'+ccru_version+'-----PREDICT-WITH-PROCESSES----------')
         dense_X_test = X_test.todense()
-        ensemble_votes = Parallel(n_jobs=num_threads)(delayed(predict_results)(dense_X_test, y_test, seed, model[seed], ccru_version) for seed in range(y_test.shape[1]))
+        ensemble_votes = Parallel(n_jobs=num_threads)(delayed(predict_results)(dense_X_test, seed, model[seed], ccru_version, feature_subsets_per_cc) for seed in range(y_test.shape[1]))
         ensemble_votes = np.asarray(ensemble_votes)
         ensemble_votes = ensemble_votes.transpose()
 

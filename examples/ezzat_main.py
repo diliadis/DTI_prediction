@@ -23,20 +23,20 @@ def main():
     auROC_score_per_fold = []
 
     for i in range(5):
-
+        print('|-------------------------  RUNNING FOLD '+str(i)+'  -------------------------|')
         X_train = np.concatenate((np.delete(fold_features, i)), axis=0)
         y_train = np.concatenate((np.delete(fold_labels, i)), axis=0)
 
         X_test = fold_features[i]
         y_test = fold_labels[i]
 
-        ensemble_model = ml_methods.parallel_ecc_train(X_train, y_train, num_threads,
+        ensemble_model, feature_subsets_per_cc = ml_methods.parallel_ecc_train(X_train, y_train, num_threads,
                                                        num_ccs,
-                                                       ccru_version, model1)
+                                                       ccru_version, model1, feature_subsampling_ratio=0.2)
 
         results = ml_methods.parallel_ecc_predict(ensemble_model, X_test, y_test,
                                                num_threads,
-                                               num_ccs, ccru_version)
+                                               num_ccs, ccru_version, feature_subsets_per_cc)
 
         auROC_score_per_fold.append(ml_methods.get_mean_auROC(y_test, results, averaging='macro'))
 

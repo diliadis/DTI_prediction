@@ -64,7 +64,7 @@ def train_model(X_train, y_train, seed, ccru_version, base_classifier, X_val, y_
         else:
             trained_model = model.fit(X_train[np.array(sampled_index), :], sampled_y)
     else:
-        print('Train ecc: ' + str(seed) + ' started')
+        print('Train ecc: ' + str(seed) + ' started ')
         if len(feature_subsets_per_cc) != 0:
             trained_model = model.fit(X_train[:, feature_subsets_per_cc[seed]], y_train, X_val, y_val)
         else:
@@ -76,7 +76,10 @@ def train_model(X_train, y_train, seed, ccru_version, base_classifier, X_val, y_
 def predict_results(X_test, seed, trained_model, ccru_version, feature_subsets_per_cc=[]):
     if ccru_version == 'binary_relevance':
         print('Predict for label: '+str(seed)+' started')
-        y_pred = trained_model.predict_proba(X_test)
+        if len(feature_subsets_per_cc) == 0:
+            y_pred = trained_model.predict_proba(X_test)
+        else:
+            y_pred = trained_model.predict_proba(X_test[:, feature_subsets_per_cc[seed]])
         y_pred = y_pred[:, 1]
         print('predict_'+str(seed)+'_done')
     elif ccru_version == 'eccru' or ccru_version == 'eccru2' or ccru_version == 'eccru3' or ccru_version == 'standard':

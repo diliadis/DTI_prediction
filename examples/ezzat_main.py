@@ -36,8 +36,9 @@ def main():
 
         results = ml_methods.parallel_ecc_predict(ensemble_model, X_test, y_test,
                                                num_threads,
-                                               num_ccs, ccru_version, feature_subsets_per_cc)
-
-        auROC_score_per_fold.append(ml_methods.get_mean_auROC(y_test, results, averaging='macro'))
+                                               num_ccs, ccru_version, feature_subsets_per_cc = feature_subsets_per_cc)
+        score = ml_methods.get_mean_auROC(y_test, results, averaging='macro')
+        print('The auROC score for the fold '+str(i)+' is '+str(score))
+        auROC_score_per_fold.append(score)
 
     print('The average auROC over the '+str(num_folds)+' folds is '+str(np.mean(auROC_score_per_fold)))

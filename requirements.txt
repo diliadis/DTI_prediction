@@ -9,7 +9,7 @@ ggplot==0.11.5
 grpcio==1.21.1
 h5py==2.9.0
 hypopt==1.0.8
-joblib==0.13.2
+joblib==1.2.0
 Keras-Applications==1.0.8
 Keras-Preprocessing==1.1.0
 kiwisolver==1.1.0

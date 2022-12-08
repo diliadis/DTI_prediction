@@ -1,7 +1,7 @@
 absl-py==0.7.1
 astor==0.8.0
 brewer2mpl==1.4.1
-certifi==2019.3.9
+certifi==2022.12.7
 cycler==0.10.0
 deepchem==2.2.1.dev54
 gast==0.2.2
